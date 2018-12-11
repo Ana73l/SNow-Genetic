@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>x_116151_genetic.Population</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>Population</name>
+        <script><![CDATA[var Population = Class.create();
+
+Population.createRandom = function(/*Number*/ size, /*Array*/ genePool, /*Number*/ chromosomeSize, /*Function*/ fitnessCalculator) {
+	if(!size) {
+		throw 'Error creating random population: invalid size passed.';
+	}
+	if(!genePool) {
+		throw 'Error creating random population: invalid gene pool passed.';
+	}
+	if(!chromosomeSize) {
+		throw 'Error creating random population: invalid chromosome size passed.';
+	}
+	if(!fitnessCalculator) {
+		throw 'Error creating random population: invalid fitness calculator passed.';
+	}
+	
+	var individuals = [];
+	
+	for(var i = 0; i < size; i++) {
+		var individual = Individual.createRandom(genePool, chromosomeSize, fitnessCalculator);
+		
+		individuals.push(individual);
+	}
+	
+	return new Population(individuals);
+};
+
+Population.copy = function(/*Population*/ population) {
+	if(!population) {
+		throw 'Error copying population: population cannot be falsy.';
+	}
+	
+	var individuals = population.individuals.copy();
+	var calculator = population.individuals[0].fitnessCalculator();
+	
+	return new Population(individuals);
+};
+
+Population.prototype = {
+	
+    initialize: function(/*Array*/ individuals) {
+		if(!individuals) {
+			throw 'Error initializing population: individuals cannot be falsy.';
+		}
+		
+		this._individuals = individuals;
+    },
+	
+	individuals: function() {
+		return this._individuals;
+	},
+	
+	size: function() {
+		return this.individuals().length;
+	},
+	
+	fittestToLeast: function() {
+		var individuals = this.individuals().sort(function(first, second) {
+			return second.fitness() - first.fitness();
+		});
+		
+		return new Population(individuals);
+	},
+	
+	leastToFittest: function() {
+		var individuals = this.individuals().sort(function(first, second) {
+			return first.fitness() - second.fitness();
+		});
+		
+		return new Population(individuals);
+	},
+	
+	breed: function(/*Number*/ fittestCount) {
+		var count = fittestCount || 2;
+		
+		if(count > this.size()) {
+			throw 'Error breeding population: fittest count cannot be greater than the population size.';
+		}
+		
+		var fittest = this.fittestToLeast().individuals().slice(0, fittestCount - 1);
+		var offSpring = [];
+		
+		for(var i = 0; i < fittest.length; i++) {
+			for(var j = 0; j < fittest.length; j++) {
+				var individual = fittest[i].crossover(fittest[j]);
+				
+				offSpring.push(individual);
+			}
+		}
+		
+		var newIndividuals = this.individuals().concat(offSpring);
+		
+		return new Population(newIndividuals);
+	},
+	
+	mutate: function(/*Number*/ individualsCount, /*boolean*/ probability, /*Array*/ genePool) {
+		if(!individualsCount) {
+			throw 'Error mutating population: number of individuals to mutate not set.';
+		}
+		if(!genePool) {
+			throw 'Error mutating population: gene pool cannot be falsy.';
+		}
+		if(!probability) {
+			return;
+		}
+		
+		var newIndividuals = this.fittestToLeast().individuals().map(function(individual, index) {
+			if(index <= individualsCount - 1) {
+				return individual.mutate(genePool);
+			} else {
+				return individual.copy();
+			}
+		});
+		
+		return new Population(newIndividuals);
+	},
+	
+	normalize: function(/*Number*/ survivors) {
+		if(!survivors) {
+			throw 'Error normalizing population: population size not passed.';
+		}
+		
+		var fittest = this.fittestToLeast().individuals().slice(0, survivors);
+		
+		return new Population(fittest);
+	},
+	
+	toString: function() {
+		return this.individuals().map(function(ind) {
+			return ind.toString();
+		}).join('\n');
+	},
+	
+    type: 'Population'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-11-26 01:31:06</sys_created_on>
+        <sys_id>01b22eb4db022300748cf28239961994</sys_id>
+        <sys_mod_count>24</sys_mod_count>
+        <sys_name>Population</sys_name>
+        <sys_package display_value="Genetic" source="x_116151_genetic">c9fd8634db022300748cf282399619af</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Genetic">c9fd8634db022300748cf282399619af</sys_scope>
+        <sys_update_name>sys_script_include_01b22eb4db022300748cf28239961994</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-11-27 03:37:18</sys_updated_on>
+    </sys_script_include>
+</record_update>

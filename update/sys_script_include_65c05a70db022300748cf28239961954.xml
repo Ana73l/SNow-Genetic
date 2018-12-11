@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>public</access>
+        <active>true</active>
+        <api_name>x_116151_genetic.Chromosome</api_name>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>Chromosome</name>
+        <script><![CDATA[var Chromosome = Class.create();
+
+//-----------STATIC METHODS-------------
+Chromosome.createRandom = function(/*Array*/ genePool, /*Number*/ chromosomeLength) {
+	if(!genePool) {
+		throw 'Error generating random genes: passed gene possibilities cannot be falsey.';
+	}
+	if(!chromosomeLength) {
+		throw 'Error generating random genes: passed genes count cannot be empty';
+	}
+	
+	var genesArr = [];
+		
+	for(var num = 0; num < chromosomeLength; num++) {
+		var gene = Gene.createRandom(genePool);
+			
+		genesArr.push(gene);
+	}
+		
+	return new Chromosome(genesArr);
+};
+
+Chromosome.copy = function(/*Chromosome*/ chromosome) {
+	if(!chromosome) {
+		throw 'Error copying chromosome: passed chromosome cannot be falsy.';
+	}
+	
+	return new Chromosome(chromosome.genes());
+};
+
+//-------PROTOTYPE------------
+Chromosome.prototype = {
+	
+    initialize: function(/*Array*/ genes) {
+		if(!genes) {
+			throw 'Error setting genes in chromosome: passed genes cannot be falsy.';
+		}
+		
+		this._genes = genes;
+    },
+	
+	genes: function() {
+		return this._genes;
+	},
+	
+	size: function() {
+		return this._genes.length;
+	},
+	
+	geneAt: function(/*Number*/ index) {
+		return this._genes[index];
+	},
+	
+	geneValueAt: function(/*Number*/ index) {
+		return this._genes[index].value();
+	},
+	
+	copy: function() {
+		var genes = this.genes().map(function(gene) {
+			return Gene.copy(gene);
+		});
+		
+		return new Chromosome(genes);
+	},
+	
+	crossover: function(/*Chromosome*/ otherChromosome) {
+		if(!otherChromosome) {
+			return 'Error crossing chromosomes: passed chromosome cannot be empty.';
+		}
+		
+		var maxIndex = this.size() - 1;
+		var randomIndex = Utils.getRandomInRange(0, maxIndex);
+		
+		var offspringGenes = this._genes.map(function(gene, index) {
+			return index >= randomIndex ? Gene.copy(gene) : Gene.copy(otherChromosome.geneAt(index));
+		});
+		
+		return new Chromosome(offspringGenes);
+	},
+	
+	mutate: function(/*Array*/ genePool) {
+		if(!genePool) {
+			throw 'Error mutating gene: passed genePool cannot be falsy.';
+		}
+		
+		var maxGenesIndex = this.size() - 1;
+		var mutationIndex = Utils.getRandomInRange(0, maxGenesIndex);
+		
+		var genes = this._genes.map(function(gene, index) {
+			return index == mutationIndex ? Gene.createRandom(genePool) : Gene.copy(gene);
+		});
+		
+		return new Chromosome(genes);
+	},
+	
+	toString: function() {
+		return this.genes().reduce(function(res, gene) {
+			return res += gene.toString();
+		}, '');
+	},
+	
+    type: 'Chromosome'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2018-11-25 23:59:10</sys_created_on>
+        <sys_id>65c05a70db022300748cf28239961954</sys_id>
+        <sys_mod_count>28</sys_mod_count>
+        <sys_name>Chromosome</sys_name>
+        <sys_package display_value="Genetic" source="x_116151_genetic">c9fd8634db022300748cf282399619af</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Genetic">c9fd8634db022300748cf282399619af</sys_scope>
+        <sys_update_name>sys_script_include_65c05a70db022300748cf28239961954</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2018-11-27 03:38:48</sys_updated_on>
+    </sys_script_include>
+</record_update>
